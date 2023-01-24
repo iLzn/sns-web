@@ -168,7 +168,7 @@ export default {
           },
           (error) => {
             this.isLoading = true;
-            console.log(error.message + "服务器可能挂了，反正出错了");
+            alert(error.message + "服务器可能挂了，反正出错了");
           }
         );
       // 清空多选框
