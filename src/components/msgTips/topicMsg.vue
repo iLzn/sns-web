@@ -4,8 +4,10 @@
     <topicMsgDialog
       :dialogMsgVisible="dialogMsgVisible"
       :dialogChange="dialogChange"
-      :topicMsg="topicMsg"
       :diaglogId="diaglogId"
+      :handleMsgisRead="handleMsgisRead"
+      :dialogMsg="dialogMsg"
+      :userUuid="userUuid"
     />
     <!-- 数据请求状态提示 -->
     <div v-show="isLoading">加载中！</div>
@@ -29,7 +31,7 @@
                 >&nbsp;</el-checkbox
               >
             </div>
-            <span style="color: blue">{{ msg.unick }} </span>评论了 您的话题:<br />
+            <span style="color: blue">{{ msg.unick }} </span>回复了您:<br />
             <!-- 消息内容 -->
             <div class="content">
               <a @click="showDialog(msg.id)"> {{ msg.msgContent }}</a>
@@ -129,13 +131,15 @@ export default {
       // 对话框id
       diaglogId: "",
       // 用户id
-      userUuid: "5c173b3312794537af02bf0237349df1",
+      userUuid: "68c05ec6f4694baaab83a3e5bcfbbd5d",
       // 数据总数
       topicMsgCount: 0,
       // 展示数据条数
       pageSize: 5,
       //当前页
       pageNum: 1,
+      //对话框消息
+      dialogMsg: [],
     };
   },
   computed: {
@@ -191,9 +195,11 @@ export default {
           () => {}
         );
     },
-    // 控制对话框显示
+    // 控制对话框显示,初始化对话框
     showDialog(id) {
       this.diaglogId = id;
+      this.dialogMsg =
+        this.topicMsg[this.topicMsg.findIndex((msg) => msg.id == id)];
       this.dialogMsgVisible = true;
     },
     // 回调函数 控制对话框关闭
@@ -253,6 +259,10 @@ export default {
               this.pageNum -= 1;
             }
             this.getTopicMsg(this.userUuid, this.pageNum);
+            this.$notify({
+              message: "操作成功",
+              type: "success",
+            });
           },
           (error) => {
             alert(error.message);

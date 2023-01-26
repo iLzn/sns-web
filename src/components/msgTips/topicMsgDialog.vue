@@ -10,7 +10,7 @@
       <div class="dialogContext flex column">
         <!-- 标题 -->
         <div class="dialogMsgTitle">
-          在<a>xxx</a>话题
+          在<el-link type="primary">xxx</el-link>话题
           <hr />
         </div>
         <!-- 内容盒 -->
@@ -22,11 +22,13 @@
               <!-- 内容 -->
               <div class="content bk flex column bc">
                 <!-- 内容头 -->
-                <div class="contentTile">xxx评论:</div>
+                <div class="contentTile">
+                  <span class="unick">{{ dialogMsg.unick }}</span> 回复:
+                </div>
                 <!-- 主内容 -->
-                <div class="msgContent">hahhahah</div>
+                <div class="msgContent">{{ dialogMsg.msgContent }}</div>
                 <!-- 内容尾 -->
-                <div class="footer">11点34分</div>
+                <div class="footer">{{ dialogMsg.publishDate }}</div>
               </div>
             </li>
           </ul>
@@ -42,8 +44,18 @@
           </el-input>
         </div>
         <div class="dialogFooter flex">
-          <button class="pianoButton big-button mright dialogFont">已读</button>
-          <button class="pianoButton big-button dialogFont">回复</button>
+          <button
+            class="pianoButton big-button mright dialogFont"
+            @click="handleDialogMsgisRead"
+          >
+            已读
+          </button>
+          <button
+            class="pianoButton big-button dialogFont"
+            @click="handleReply"
+          >
+            回复
+          </button>
         </div>
       </div>
     </el-dialog>
@@ -51,28 +63,65 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: "topicMsgDialog",
-  props: ["dialogMsgVisible", "dialogChange", "topicMsg", "diaglogId"],
+  props: [
+    "dialogMsgVisible",
+    "dialogChange",
+    "diaglogId",
+    "handleMsgisRead",
+    "dialogMsg",
+    "userUuid",
+  ],
   data() {
     return {
       textarea: "",
       dialogVisible: this.dialogMsgVisible,
-      dialogTopicMsg: this.topicMsg,
-      dialogTopicId: this.diaglogId,
     };
   },
   computed: {},
-  methods: {},
+  methods: {
+    //设置消息已读
+    handleDialogMsgisRead() {
+      this.handleMsgisRead(this.diaglogId);
+      this.dialogVisible = false;
+    },
+
+    //回复消息
+    handleReply() {
+      axios
+        .get("http://localhost:8080/SNS/insertTopicMsg.do", {
+          params: {
+            topicUuid: this.dialogMsg.topicUuid,
+            msgContent: this.textarea,
+            userUuid: this.dialogMsg.publisherUuid,
+            publisherUuid: this.userUuid,
+          },
+        })
+        .then(
+          (response) => {
+            if (response.data == "success") {
+              this.$notify({
+                message: "消息已回复~",
+                type: "success",
+              });
+              this.handleDialogMsgisRead();
+              this.dialogVisible = false;
+            }
+          },
+          (error) => {
+            alert(error.message + "服务器可能挂了，反正出错了");
+          }
+        );
+    },
+  },
   mounted() {},
   watch: {
     // 监视对话框可视化
     dialogMsgVisible() {
       this.dialogVisible = this.dialogMsgVisible;
     },
-    // dialogTopicMsg() {
-    //   this.dialogTopicMsg = this.topicMsg;
-    // },
   },
 };
 </script>
@@ -82,7 +131,9 @@ export default {
 .bk {
   border: 1px solid black;
 }
-
+.unick {
+  color: blue;
+}
 .dialogContext {
   width: 95%;
   align-items: center;
